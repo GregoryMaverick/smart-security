@@ -1,7 +1,9 @@
 package com.maverick.picontroller;
 
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -177,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
                             Intent intent = new Intent(MainActivity.this, MainActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+                            long[] pattern = {500,500,500,500,500,500,500,500,500};
                             NotificationCompat.Builder mBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(getApplicationContext())
                                     .setSmallIcon(R.mipmap.ic_launcher)
                                     .setContentTitle("INTRUDER ALERT!!!")
@@ -184,6 +187,9 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
                                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                                     .setFullScreenIntent(pendingIntent, true)
                                     .setContentIntent(pendingIntent)
+                                    .setDefaults(Notification.DEFAULT_SOUND)
+                                    .setLights(Color.RED, 500, 500)
+                                    .setVibrate(pattern)
                                     .setAutoCancel(true);
 
                             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
