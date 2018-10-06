@@ -1,32 +1,13 @@
 package com.maverick.picontroller;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.NotificationCompat;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.Toast;
 import android.widget.ToggleButton;
-
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 //import co.teubi.raspberrypi.io.*;
 
 
@@ -35,6 +16,7 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
     public static final String TAG = "PICONTROLLERAPP";
     CheckBox cb;
     public static ToggleButton tb;
+    Server server;
     GPIOStatus stat;
     String toasttext;
     private GPIO gpioPort;
@@ -44,6 +26,10 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        server = new Server(this);
+        Log.d(TAG, "Server initialized");
+        Log.d(TAG, "Results: " + server.getIpAddress() + ":" + server.getPort());
 
         this.gpioPort = new GPIO(
                 new GPIO.ConnectionInfo(
@@ -94,9 +80,15 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
         });
 
 
-        this.gpioPort.addPortUpdateListener(this);
-        (new Thread(this.gpioPort)).start();
-        Log.d(TAG, "Started");
+
+
+//        // Method to stop the service
+//        public void stopService(View view) {
+//            stopService(new Intent(getBaseContext(), MyService.class));
+//        }
+
+        //startService();
+
 
 
         // Log.d(TAG, "Value of port 18 is: " + stat.ports.get(18).value);
@@ -158,76 +150,84 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
 //        });
 //        tee.start();
          //Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://192.168.43.253:8000/GPIO/18/value";
+//        RequestQueue queue = Volley.newRequestQueue(this);
+//        String url = "http://192.168.43.253:8000/GPIO/18/value";
+//
+//// Request a string response from the provided URL.
+//        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+//                new Response.Listener<String>() {
+//                    @Override
+//                    public void onResponse(String response) {
+//                        // Display the first 500 characters of the response string.
+//                        portStatus = response;
+//                        Log.d(TAG, "Response has been gotten and it is: " + response);
+//
+//
+//
+//                        Log.d(TAG, "This is the latest Port Status: " + portStatus);
+//                        if(Objects.equals(portStatus, "1")) {
+//                            tb.setChecked(true);
+//                            //Create an explicit intent for an Activity in your app
+//                            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+//                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+//                            long[] pattern = {500,500,500,500,500,500,500,500,500};
+//                            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+//                            NotificationCompat.Builder mBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(getApplicationContext())
+//                                    .setSmallIcon(R.mipmap.ic_launcher)
+//                                    .setContentTitle("INTRUDER ALERT!!!")
+//                                    .setContentText("There is an intruder in your house, click to view")
+//                                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+//                                    .setFullScreenIntent(pendingIntent, true)
+//                                    .setContentIntent(pendingIntent)
+//                                    .setSound(alarmSound)
+//                                   // .setStyle(new NotificationCompat.CATEGORY_EVENT)
+//                                    .setLights(Color.RED, 500, 500)
+//                                    .setVibrate(pattern)
+//                                    .setAutoCancel(true);
+//
+//                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+//
+//                            Log.d(TAG, "Notify about to start ");
+//                            // notificationId is a unique int for each notification that you must define
+//                            notificationManager.notify(1, mBuilder.build());
+//                        }
+//
+//
+//                        Toast.makeText(getApplicationContext(), portStatus, Toast.LENGTH_LONG).show();
+//
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.d(TAG, "Unable to get response");
+//
+//                    }
+//                }) {
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                HashMap<String, String> params = new HashMap<String, String>();
+//                params.put("Content-Type", "application/json");
+//                String creds = String.format("%s:%s", "webiopi", "raspberry");
+//                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
+//                params.put("Authorization", auth);
+//                Log.d(TAG, "Auth is Done!");
+//                return params;
+//
+//            }
+//        };
+//
+//// Add the request to the RequestQueue.
+//        queue.add(stringRequest);
+//
 
-// Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        portStatus = response;
-                        Log.d(TAG, "Response has been gotten and it is: " + response);
-
-
-
-                        Log.d(TAG, "This is the latest Port Status: " + portStatus);
-                        if(Objects.equals(portStatus, "1")) {
-                            tb.setChecked(true);
-                            //Create an explicit intent for an Activity in your app
-                            Intent intent = new Intent(MainActivity.this, MainActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-                            long[] pattern = {500,500,500,500,500,500,500,500,500};
-                            NotificationCompat.Builder mBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(getApplicationContext())
-                                    .setSmallIcon(R.mipmap.ic_launcher)
-                                    .setContentTitle("INTRUDER ALERT!!!")
-                                    .setContentText("There is an intruder in your house, click to view")
-                                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                                    .setFullScreenIntent(pendingIntent, true)
-                                    .setContentIntent(pendingIntent)
-                                    .setDefaults(Notification.DEFAULT_SOUND)
-                                    .setLights(Color.RED, 500, 500)
-                                    .setVibrate(pattern)
-                                    .setAutoCancel(true);
-
-                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
-
-                            Log.d(TAG, "Notify about to start ");
-                            // notificationId is a unique int for each notification that you must define
-                            notificationManager.notify(1, mBuilder.build());
-                        }
-
-
-                        Toast.makeText(getApplicationContext(), portStatus, Toast.LENGTH_LONG).show();
-
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, "Unable to get response");
-
-                    }
-                }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/json");
-                String creds = String.format("%s:%s", "webiopi", "raspberry");
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
-                params.put("Authorization", auth);
-                Log.d(TAG, "Auth is Done!");
-                return params;
-
-            }
-        };
-
-// Add the request to the RequestQueue.
-        queue.add(stringRequest);
-
-
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        server.onDestroy();
+        Log.d(TAG, "Server destroyed");
     }
 
     @Override
@@ -276,6 +276,12 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
     @Override
     public void onConnectionFailed(String message) {
         Log.d(TAG, "Connection Failed");
+    }
+
+    public void startService() {
+        Log.d(TAG, "Start Service");
+        startService(new Intent(this, SocketServer.SockectService.class));
+
     }
 
 
