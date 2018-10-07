@@ -1,24 +1,33 @@
 package com.maverick.picontroller;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.MediaController;
+import android.widget.ProgressBar;
 import android.widget.ToggleButton;
+import android.widget.VideoView;
 //import co.teubi.raspberrypi.io.*;
 
 
-public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateListener, GPIO.ConnectionEventListener {
+public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,GPIO.PortUpdateListener, GPIO.ConnectionEventListener {
 
     public static final String TAG = "PICONTROLLERAPP";
     CheckBox cb;
     public static ToggleButton tb;
-    Server server;
-    GPIOStatus stat;
-    String toasttext;
+    // "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4"
+    //"http://192.168.43.253:8160
+    public String vidAddress = "http://192.168.43.253:8160";
+    VideoView vidView;
+    private ProgressBar progressBar;
     private GPIO gpioPort;
     public String portStatus;
 
@@ -27,11 +36,14 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+
 //        server = new Server(this);
 //        Log.d(TAG, "Server initialized");
 //        Log.d(TAG, "Results: " + server.getIpAddress() + ":" + server.getPort());
         startService();
-
+        videoPlayer();
         this.gpioPort = new GPIO(
                 new GPIO.ConnectionInfo(
                         "192.168.43.253",
@@ -68,11 +80,12 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
                 if (!cb.isChecked()) {
                     if (!tb.isChecked()) {
                         gpioPort.setValue(18, 0);
+                        tb.setBackgroundColor(Color.parseColor("#898686"));
                         Log.d(TAG, "toggle button set top 0");
 
                     } else {
                         gpioPort.setValue(18, 1);
-
+                        tb.setBackgroundColor(Color.parseColor("#0DFA00"));
                         Log.d(TAG, "toggle button set top 1");
 
                     }
@@ -280,6 +293,44 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
 
     }
 
+    public void videoPlayer() {
+        vidView = (VideoView) findViewById(R.id.myVideo);
+        progressBar = (ProgressBar) findViewById(R.id.progressbar);
+        progressBar.setVisibility(View.VISIBLE);
+        Uri vidUri = Uri.parse(vidAddress);
+        vidView.setVideoURI(vidUri);
+        MediaController vidControl = new MediaController(this);
+        vidControl.setAnchorView(vidView);
+        vidView.setMediaController(vidControl);
+        vidView.setOnPreparedListener(this);
+        vidView.setOnErrorListener(this);
 
+
+//        Log.d(TAG, "Is Mediaplayer playing: " + vidView.isPlaying());
+    }
+
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        Log.d(TAG, "Mediaplayer prepared" );
+
+        mp.start();
+        Log.d(TAG, "Mediaplayer started" );
+        Log.d(TAG, "Is Mediaplayer playing: " + mp.isPlaying());
+        progressBar.setVisibility(View.GONE);
+
+
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        Log.d(TAG, "Mediaplayer failed to prepare" );
+        progressBar.setVisibility(View.GONE);
+        mp.reset();
+
+        Log.d(TAG, "Mediaplayer Reset" );
+        return false;
+
+    }
 }
 
