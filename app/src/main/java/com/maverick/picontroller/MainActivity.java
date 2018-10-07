@@ -27,9 +27,10 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        server = new Server(this);
-        Log.d(TAG, "Server initialized");
-        Log.d(TAG, "Results: " + server.getIpAddress() + ":" + server.getPort());
+//        server = new Server(this);
+//        Log.d(TAG, "Server initialized");
+//        Log.d(TAG, "Results: " + server.getIpAddress() + ":" + server.getPort());
+        startService();
 
         this.gpioPort = new GPIO(
                 new GPIO.ConnectionInfo(
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
 //            stopService(new Intent(getBaseContext(), MyService.class));
 //        }
 
-        //startService();
+
 
 
 
@@ -223,12 +224,7 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
 //
 
     }
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        server.onDestroy();
-        Log.d(TAG, "Server destroyed");
-    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -280,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements GPIO.PortUpdateLi
 
     public void startService() {
         Log.d(TAG, "Start Service");
-        startService(new Intent(this, SocketServer.SockectService.class));
+        startService(new Intent(this, PortListenningService.class));
 
     }
 

@@ -5,6 +5,7 @@ package com.maverick.picontroller;
  */
 
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.RingtoneManager;
@@ -16,8 +17,6 @@ import android.util.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -29,13 +28,13 @@ import java.util.Objects;
 
 
 public class Server {
-    MainActivity activity;
+    Service activity;
     ServerSocket serverSocket;
     String TAG = "PICONTROLLERAPP";
     String message = "";
     static final int socketServerPORT = 8080;
 
-    public Server(MainActivity activity) {
+    public Server(Service activity) {
         Log.d(TAG, "Server Activity");
         this.activity = activity;
         Thread socketServerThread = new Thread(new SocketServerThread());
@@ -70,25 +69,29 @@ public class Server {
             try {
                 // create ServerSocket using specified port
                 serverSocket = new ServerSocket(socketServerPORT);
+                Log.d(TAG, "ServerSocket Created");
 
 
                 while (true) {
                     // block the call until connection is created and return
                     // Socket object
                     Socket socket = serverSocket.accept();
+                    Log.d(TAG, "ServerSocket Accepted");
                     reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+                    Log.d(TAG, "Buffer Reader Initialized");
                     msg = reader.readLine();
-
+                    reader.close();
+                    Log.d(TAG, "Reader read from line");
                     Log.d(TAG, "Response: " + msg);
                     count++;
 
-//                    message += "#" + count + " from "
-//                            + socket.getInetAddress() + ":"
-//                            + socket.getPort() + "\n";
-//                    Log.d(TAG, "THis is the message: " + message);
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                    message += "#" + count + " from "
+                            + socket.getInetAddress() + ":"
+                            + socket.getPort() + "\n";
+                    Log.d(TAG, "THis is the message: " + message);
+//                    activity.runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
                             Log.d(TAG, "Response in Run: " + msg);
                             if (Objects.equals(msg, "1")) {
                                 Intent intent = new Intent(activity.getApplicationContext(), MainActivity.class);
@@ -114,25 +117,28 @@ public class Server {
                                 Log.d(TAG, "Intruder Alert Notification");
                                 // notificationId is a unique int for each notification that you must define
                                 notificationManager.notify(1, mBuilder.build());
+                                break;
                                 //activity.msg.setText(message);
-                                try {
-                                    Log.d(TAG, "Thread Sleeping");
-                                    Thread.sleep(60000);
-
-                                } catch (InterruptedException e) {
-                                    Log.d(TAG, "Error in Sleeping");
-                                    e.printStackTrace();
-                                }
+//                                try {
+//                                    Log.d(TAG, "Thread Sleeping");
+//                                    msg = "0";
+//                                    Log.d(TAG, "Response se to null");
+//                                    Thread.sleep(15000);
+//
+//                                } catch (InterruptedException e) {
+//                                    Log.d(TAG, "Error in Sleeping");
+//                                    e.printStackTrace();
+//                                }
                             }
                         }
-                    });
+//                    });
 
 //                    SocketServerReplyThread socketServerReplyThread =
 //                            new SocketServerReplyThread(socket, count);
 //                    socketServerReplyThread.run();
 
 
-                }
+
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -141,56 +147,56 @@ public class Server {
     }
 
 
-    private class SocketServerReplyThread extends Thread {
-
-        private Socket hostThreadSocket;
-        int cnt;
-
-        SocketServerReplyThread(Socket socket, int c) {
-            hostThreadSocket = socket;
-            cnt = c;
-        }
-
-        @Override
-        public void run() {
-            OutputStream outputStream;
-            String msgReply = "Hello from Server, you are #" + cnt;
-
-            try {
-                outputStream = hostThreadSocket.getOutputStream();
-                PrintStream printStream = new PrintStream(outputStream);
-                printStream.print(msgReply);
-                printStream.close();
-
-                message += "replayed: " + msgReply + "\n";
-
-                activity.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        //activity.msg.setText(message);
-                        Log.d(TAG,"Replay message: " + message );
-                    }
-                });
-
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                message += "Something wrong! " + e.toString() + "\n";
-                Log.d(TAG,"Error message: " + message );
-            }
-
-            activity.runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    //activity.msg.setText(message);
-                    Log.d(TAG,"This is the message2: " + message );
-                }
-            });
-        }
-
-    }
+//    private class SocketServerReplyThread extends Thread {
+//
+//        private Socket hostThreadSocket;
+//        int cnt;
+//
+//        SocketServerReplyThread(Socket socket, int c) {
+//            hostThreadSocket = socket;
+//            cnt = c;
+//        }
+//
+////        @Override
+////        public void run() {
+////            OutputStream outputStream;
+////            String msgReply = "Hello from Server, you are #" + cnt;
+////
+////            try {
+////                outputStream = hostThreadSocket.getOutputStream();
+////                PrintStream printStream = new PrintStream(outputStream);
+////                printStream.print(msgReply);
+////                printStream.close();
+////
+////                message += "replayed: " + msgReply + "\n";
+////
+////                activity.runOnUiThread(new Runnable() {
+////
+////                    @Override
+////                    public void run() {
+////                        //activity.msg.setText(message);
+////                        Log.d(TAG,"Replay message: " + message );
+////                    }
+////                });
+////
+////            } catch (IOException e) {
+////                // TODO Auto-generated catch block
+////                e.printStackTrace();
+////                message += "Something wrong! " + e.toString() + "\n";
+////                Log.d(TAG,"Error message: " + message );
+////            }
+////
+////            activity.runOnUiThread(new Runnable() {
+////
+////                @Override
+////                public void run() {
+////                    //activity.msg.setText(message);
+////                    Log.d(TAG,"This is the message2: " + message );
+////                }
+////            });
+////        }
+//
+//    }
 
     public String getIpAddress() {
         String ip = "";

@@ -19,7 +19,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".SocketServer" android:exported="true" android:enabled="true"/>
+        <service android:name=".PortListenningService" />
     </application>
 
 </manifest>
